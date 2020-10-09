@@ -1,0 +1,34 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="UML to SVG" type="KotlinStandaloneScriptRunConfigurationType">
+    <module name="SDK_Code_Samples" />
+    <option name="filePath" value="$PROJECT_DIR$/_tools/uml/build.main.kts" />
+    <option name="vmParameters" value="" />
+    <option name="alternativeJrePath" />
+    <option name="programParameters" value="../../reference_guide/img/publish.puml" />
+    <option name="passParentEnvs" value="true" />
+    <option name="workingDirectory" value="_tools/uml" />
+    <option name="isAlternativeJrePathEnabled" value="false" />
+    <option name="VM_PARAMETERS" />
+    <option name="PROGRAM_PARAMETERS" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="PASS_PARENT_ENVS" value="true" />
+    <option name="MAIN_CLASS_NAME" />
+    <option name="WORKING_DIRECTORY" />
+    <option name="filePath" value="$PROJECT_DIR$/_tools/uml/build.main.kts" />
+    <option name="vmParameters" value="" />
+    <option name="alternativeJrePath" />
+    <option name="programParameters" value="../../reference_guide/img/publish.puml" />
+    <option name="passParentEnvs" value="true" />
+    <option name="workingDirectory" value="_tools/uml" />
+    <option name="isAlternativeJrePathEnabled" value="false" />
+    <option name="VM_PARAMETERS" />
+    <option name="PROGRAM_PARAMETERS" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="PASS_PARENT_ENVS" value="true" />
+    <option name="MAIN_CLASS_NAME" />
+    <option name="WORKING_DIRECTORY" />
+    <method v="2" />
+  </configuration>
+</component>

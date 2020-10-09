@@ -1,6 +1,5 @@
 // Copyright 2000-2020 JetBrains s.r.o. and other contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-// Example command line execution:
-//    reference_guide/img (IJSDK-846)$ kotlin ../../_tools/uml/build.main.kts connection
+//
 @file:Repository("https://repo1.maven.org/maven2/")
 @file:DependsOn("net.sourceforge.plantuml:plantuml:1.2020.0")
 
@@ -21,86 +20,59 @@ import javax.xml.xpath.XPathFactory
 val defaultFontSize = "14"
 val noteBackgroundColor = "#ECECEC"
 
-// Initialize SVG transformer
+var start = System.currentTimeMillis()
+
+val outDir = Paths.get("out").toAbsolutePath()
+Files.createDirectories(outDir)
+
+val svgFileFormat = FileFormatOption(FileFormat.SVG, /* withMetadata = */ false)
+Files.newDirectoryStream(Paths.get(".").toAbsolutePath(), "*.puml").use { inFiles ->
+  for (inFile in inFiles) {
+    if (inFile.fileName.toString().contains("-theme.")) {
+      continue
+    }
+
+    val sourceFileReader = SourceFileReader(inFile.toFile(), outDir.toFile(), svgFileFormat)
+    val result = sourceFileReader.getGeneratedImages()
+    if (result.size == 0) {
+      System.err.println("warning: no image in $inFile")
+      continue
+    }
+
+    for (s in sourceFileReader.getBlocks()) {
+      val diagram = s.getDiagram()
+      if (diagram is PSystemError) {
+        System.err.println("status=ERROR")
+        System.err.println("lineNumber=" + diagram.getLineLocation().getPosition())
+        for (error in diagram.getErrorsUml()) {
+          System.err.println("label=" + error.getError())
+        }
+      }
+    }
+  }
+}
+
+println("Generate SVG in: ${System.currentTimeMillis() - start} ms")
+start = System.currentTimeMillis()
+
+// re-format SVG
 val transformer = TransformerFactory.newInstance().newTransformer()
 transformer.setOutputProperty(OutputKeys.INDENT, "yes")
 transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
 
-// Initialize factories
 val dbFactory = DocumentBuilderFactory.newInstance()
 val xPathFactory = XPathFactory.newInstance()
 val textFillXPath = xPathFactory.newXPath().compile("/svg/g/text")
 val rectFillXPath = xPathFactory.newXPath().compile("/svg/g/rect")
 val pathFillXPath = xPathFactory.newXPath().compile("/svg/g/path")
 
-// The first argument after the script name is the PUML file to be rendered in SVG
-args.forEach {
-  println("- $it")
+Files.newDirectoryStream(outDir, "*.svg").use { svgFiles ->
+  for (svgFile in svgFiles) {
+    transformSvg(svgFile)
+  }
 }
-if (args.size == 1) {
-  val inFileName = args[0].toString()
-  println("inFileName: $inFileName")
 
-  // Generate SVG
-  var start = System.currentTimeMillis()
-
-  // Create the specification for the output path -  "."
-  val outDir = Paths.get(".").toAbsolutePath()
-  if (Files.notExists(outDir)) {
-    Files.createDirectories(outDir)   // Belt and suspenders - the output directory is the same as the input.
-  }
-
-  // Create the format for the SVG files
-  val svgFileFormat = FileFormatOption(FileFormat.SVG, /* withMetadata = */ false)
-
-  // Iterate over the files specified in the input directory stream, converting each, skipping any possible theme files.
-  Files.newDirectoryStream(Paths.get(".").toAbsolutePath(), inFileName +".puml").use { inFiles ->
-    for (inFile in inFiles) {
-      print("Transforming PUML file: ")
-      println(inFile.fileName.toString())
-      // Don't process theme files!
-      if (inFile.fileName.toString().contains("-theme.")) {
-        continue
-      }
-
-      val sourceFileReader = SourceFileReader(inFile.toFile(), outDir.toFile(), svgFileFormat)
-      val result = sourceFileReader.getGeneratedImages()
-      if (result.size == 0) {
-        System.err.println("warning: no image in $inFile")
-        continue
-      }
-
-      for (s in sourceFileReader.getBlocks()) {
-        val diagram = s.getDiagram()
-        if (diagram is PSystemError) {
-          System.err.println("status=ERROR")
-          System.err.println("lineNumber=" + diagram.getLineLocation().getPosition())
-          for (error in diagram.getErrorsUml()) {
-            System.err.println("label=" + error.getError())
-          }
-        }
-      }
-      print("Finished Transforming file to SVG: ")
-      println(inFile.fileName.toString())
-    }
-  }
-  println("Generate SVG in: ${System.currentTimeMillis() - start} ms\n")
-
-
-// re-format SVG
-  start = System.currentTimeMillis()
-  Files.newDirectoryStream(outDir, inFileName+".svg").use { svgFiles ->
-    for (svgFile in svgFiles) {
-      print("Optimizing SVG file: ")
-      println(svgFile.fileName.toString())
-      transformSvg(svgFile)
-      print("SVG file optimized: ")
-      println(svgFile.fileName.toString())
-    }
-  }
-  println("Transform SVG in: ${System.currentTimeMillis() - start} ms\n")
-
-}
+println("Transform SVG in: ${System.currentTimeMillis() - start} ms")
 
 fun transformSvg(svgFile: Path?) {
   val dBuilder = dbFactory.newDocumentBuilder()
